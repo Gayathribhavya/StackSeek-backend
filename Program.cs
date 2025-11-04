@@ -5,26 +5,27 @@ using ErrorAnalysisBackend.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using ErrorAnalysisBackend.Services;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Http;
 
-// --- Configuration ---
 var builder = WebApplication.CreateBuilder(args);
 
-// ✅ Load environment variables or appsettings.json (Optional)
-var firebaseProjectId = builder.Configuration["Firebase:ProjectId"] ?? "studio-5012646871-facfb";
-var serviceAccountPath = builder.Configuration["Firebase:ServiceAccountPath"] ?? "Secrets/serviceAccountKey.json";
+// Firebase Project ID
+var firebaseProjectId = "studio-5012646871-facfb";   // keep hard-coded or take from env if you want
 
-// --- Register Basic Services ---
+// Basic Services
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// --- Firebase Admin & Firestore Setup ---
-var credential = GoogleCredential.FromFile(serviceAccountPath);
+// ---- Firebase & Firestore Setup ----
+var credentialPath = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS");
+
+if (string.IsNullOrEmpty(credentialPath))
+{
+    Console.WriteLine("GOOGLE_APPLICATION_CREDENTIALS env variable NOT FOUND!");
+}
+
+var credential = GoogleCredential.FromFile(credentialPath);
 
 builder.Services.AddSingleton(provider =>
 {
@@ -40,7 +41,6 @@ builder.Services.AddSingleton(provider =>
 
 builder.Services.AddSingleton(provider =>
 {
-    var firebaseApp = provider.GetRequiredService<FirebaseApp>();
     return new FirestoreDbBuilder
     {
         ProjectId = firebaseProjectId,
@@ -51,28 +51,18 @@ builder.Services.AddSingleton(provider =>
 builder.Services.AddSingleton<FirestoreService>();
 builder.Services.AddSingleton<UserAnalysisService>();
 
-// --- 🌐 CORS Setup (Frontend Integration) ---
-var allowedOrigins = new[]
-{
-    "https://d1vimhi8al3qoq.cloudfront.net",        // CloudFront frontend
-    "https://stackseek.io",                         // Production domain
-    "http://localhost:5173",                        // Local frontend dev
-    "http://localhost:5174",                        // Alternate local port
-    "http://localhost:3000",                        // Common React dev port
-};
-
+// ---- CORS ----
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendPolicy", policy =>
     {
-        policy.WithOrigins(allowedOrigins)
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+              .AllowAnyMethod();
     });
 });
 
-// --- 🔐 Authentication (Firebase JWT) ---
+// ---- JWT Firebase ----
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -89,39 +79,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// --- Build App ---
 var app = builder.Build();
 
-// --- 🌱 Basic Routes ---
 app.MapGet("/", () => Results.Ok(new { status = "ok", ts = DateTime.UtcNow }));
 app.MapGet("/health", () => Results.Ok("healthy"));
 
-// --- Swagger + Dev Error Handling ---
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseDeveloperExceptionPage();
-}
-else
-{
-    app.UseExceptionHandler("/Error");
-    // app.UseHsts(); // Optional
 }
 
-// --- Middleware Order ---
 app.UseRouting();
 app.UseCors("FrontendPolicy");
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseMiddleware<DevelopmentUserMiddleware>();
-}
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
-// --- ✅ Run App ---
 app.Run();
