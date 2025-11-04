@@ -49,3 +49,7 @@ package-lock.json
 *.log
 *.tmp
 *.swp
+Secrets/
+test.http
+bin/
+obj/
