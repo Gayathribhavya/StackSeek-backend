@@ -1,0 +1,51 @@
+# --- Choose ONE option for Secrets ---
+# Option 1: Ignore the entire Secrets folder
+Secrets/
+
+# Option 2: Ignore only the specific key file (if other files in Secrets need tracking)
+# Secrets/serviceAccountKey.json
+# --- End of Secrets options ---
+
+# --- Standard .NET Core ignores ---
+# Binaries
+bin/
+obj/
+
+# Build results
+[Bb]uild/
+[Rr]elease/
+[Dd]ebug/
+publish/
+
+# IDE files
+.vs/
+*.user
+*.suo
+
+# User-specific files
+*.userosscache
+*.sln.docstates
+
+# Environment files (if you use them)
+.env
+appsettings.Development.json # <-- ADDED THIS LINE FOR AZURE SECRETS
+
+# Dependency directories (e.g., if using Node.js tools)
+node_modules/
+package-lock.json
+*.lock
+
+# Rider specific files
+.idea/
+*.iml
+
+# Nuget Packages
+*.nupkg
+# The packages folder can be ignored because of Package Restore
+**/packages/*
+!**/packages/build/
+
+# Other temporary files
+*.log
+*.tmp
+*.swp

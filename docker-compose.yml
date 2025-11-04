@@ -1,0 +1,17 @@
+services:
+  error-analysis-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: error-analysis-backend:local
+    container_name: error-analysis-backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5294
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/Secrets/serviceAccountKey.json
+    ports:
+      - "5294:5294"      # host:container
+    volumes:
+      - ./Secrets:/app/Secrets:ro
+      - ./dp-keys:/root/.aspnet/DataProtection-Keys   # optional, silences the key warning
+    restart: unless-stopped

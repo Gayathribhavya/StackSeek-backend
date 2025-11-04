@@ -1,0 +1,37 @@
+
+   ↓↓↓ CLICK THIS LINK ↓↓↓
+Send Request
+# Request 1: First analysis for 'user-gayathri'
+POST http://localhost:5294/api/Analysis
+Content-Type: application/json
+
+{
+    "userId": "user-gayathri",
+...
+}
+
+
+Send Request
+# Request 2: Second analysis for 'user-gayathri'
+POST http://localhost:5294/api/Analysis
+Content-Type: application/json
+...
+
+### -------------------------------------------
+
+   ↓↓↓ AND THIS ONE ↓↓↓
+Send Request
+# Request 3: First analysis for 'user-bhavya'
+POST http://localhost:5294/api/Analysis
+Content-Type: application/json
+...
+
+### -------------------------------------------
+### TEST 2: GET THE TOP 5 LIST (GET)
+...
+### -------------------------------------------
+
+   ↓↓↓ AND THIS ONE ↓↓↓
+Send Request
+GET http://localhost:5294/api/useranalysis/top/5
+Accept: application/json
